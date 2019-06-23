@@ -76,6 +76,41 @@ class ExitFramework :public AZinxHandler {
 	}
 } *poExit = new ExitFramework();
 
+class CmdHandler :public AZinxHandler {
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		/*判断输入是否是open或close，执行不同操作*/
+		GET_REF2DATA(BytesMsg, oBytes,_oInput);
+
+		if (oBytes.szData == "open")
+		{
+			ZinxKernel::Zinx_Add_Channel(*poOut);
+			return NULL;
+		}
+		else if (oBytes.szData == "close")
+		{
+			ZinxKernel::Zinx_Del_Channel(*poOut);
+			return nullptr;
+		}
+
+		return new BytesMsg(oBytes);
+	}
+
+	/*根据消息不同，选择不同的处理者*/
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		GET_REF2DATA(BytesMsg, oBytes, _oNextMsg);
+		if (oBytes.szData == "exit")
+		{
+			return poExit;
+		}
+		else
+		{
+			return poEcho;
+		}
+	}
+} *poCmd = new CmdHandler();
 
 /*3-写通道类*/
 class TestStdin :public Ichannel {
@@ -106,7 +141,7 @@ class TestStdin :public Ichannel {
 	}
 	virtual AZinxHandler * GetInputNextStage(BytesMsg & _oInput) override
 	{
-		return poExit;
+		return poCmd;
 	}
 };
 
