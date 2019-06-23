@@ -45,8 +45,11 @@ class Echo :public AZinxHandler {
 	{
 		/*回显到标准输出*/
 		GET_REF2DATA(BytesMsg, input, _oInput);
-
-		ZinxKernel::Zinx_SendOut(input.szData, *poOut);
+		Ichannel *poSendOut = ZinxKernel::Zinx_GetChannel_ByInfo("stdout");
+		if (NULL != poSendOut)
+		{
+			ZinxKernel::Zinx_SendOut(input.szData, *poSendOut);
+		}
 
 		return nullptr;
 	}
@@ -114,6 +117,7 @@ class CmdHandler :public AZinxHandler {
 		else if (oBytes.szData == "date")
 		{
 			status = 1;
+			return nullptr;
 		}
 		else if (oBytes.szData == "cleardate")
 		{
