@@ -76,7 +76,25 @@ class ExitFramework :public AZinxHandler {
 	}
 } *poExit = new ExitFramework();
 
+class AddDate :public AZinxHandler {
+	// 通过 AZinxHandler 继承
+	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
+	{
+		GET_REF2DATA(BytesMsg, oBytes, _oInput);
+		time_t tmp;
+		time(&tmp);
+		string szNew = string(ctime(&tmp)) + oBytes.szData;
+		BytesMsg *pret = new BytesMsg(oBytes);
+		pret->szData = szNew;
+		return pret;
+	}
+	virtual AZinxHandler * GetNextHandler(IZinxMsg & _oNextMsg) override
+	{
+		return poEcho;
+	}
+} *poAddDate = new AddDate();
 class CmdHandler :public AZinxHandler {
+	int status = 0;
 	// 通过 AZinxHandler 继承
 	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override
 	{
@@ -93,6 +111,14 @@ class CmdHandler :public AZinxHandler {
 			ZinxKernel::Zinx_Del_Channel(*poOut);
 			return nullptr;
 		}
+		else if (oBytes.szData == "date")
+		{
+			status = 1;
+		}
+		else if (oBytes.szData == "cleardate")
+		{
+			status = 0;
+		}
 
 		return new BytesMsg(oBytes);
 	}
@@ -107,10 +133,19 @@ class CmdHandler :public AZinxHandler {
 		}
 		else
 		{
-			return poEcho;
+			if (0 == status)
+			{
+				return poEcho;
+			}
+			else
+			{
+				return poAddDate;
+			}
 		}
 	}
 } *poCmd = new CmdHandler();
+
+
 
 /*3-写通道类*/
 class TestStdin :public Ichannel {
