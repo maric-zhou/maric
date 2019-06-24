@@ -56,6 +56,11 @@ std::string * CmdCheck::response2raw(UserData & _oUserData)
 
 Irole * CmdCheck::GetMsgProcessor(UserDataMsg & _oUserDataMsg)
 {
+	szOutChannel = _oUserDataMsg.szInfo;
+	if ("stdin" == szOutChannel)
+	{
+		szOutChannel = "stdout";
+	}
 	/*根据命令不同，交个给不同的处理role对象*/
 	auto rolelist = ZinxKernel::Zinx_GetAllRole();
 
@@ -91,5 +96,5 @@ Irole * CmdCheck::GetMsgProcessor(UserDataMsg & _oUserDataMsg)
 
 Ichannel * CmdCheck::GetMsgSender(BytesMsg & _oBytes)
 {
-	return ZinxKernel::Zinx_GetChannel_ByInfo("stdout");
+	return ZinxKernel::Zinx_GetChannel_ByInfo(szOutChannel);
 }
