@@ -1,6 +1,6 @@
 #include "CmdCheck.h"
 #include "CmdMsg.h"
-
+#include "EchoRole.h"
 using namespace std;
 
 CmdCheck *CmdCheck::poSingle = new CmdCheck();
@@ -16,9 +16,25 @@ CmdCheck::~CmdCheck()
 
 UserData * CmdCheck::raw2request(std::string _szInput)
 {
+	if ("exit" == _szInput)
+	{
+		ZinxKernel::Zinx_Exit();
+		return NULL;
+	}
+
 	/*赋值原始数据字符串到用户数据中字符串字段*/
 	auto pret = new CmdMsg();
 	pret->szUserData = _szInput;
+	if ("open" == _szInput)
+	{
+		pret->isCmd = true;
+		pret->isOpen = true;
+	}
+	if ("close" == _szInput)
+	{
+		pret->isCmd = true;
+		pret->isOpen = false;
+	}
 	return pret;
 }
 
@@ -32,8 +48,35 @@ Irole * CmdCheck::GetMsgProcessor(UserDataMsg & _oUserDataMsg)
 {
 	/*根据命令不同，交个给不同的处理role对象*/
 	auto rolelist = ZinxKernel::Zinx_GetAllRole();
+
+	auto pCmdMsg = dynamic_cast<CmdMsg *>(_oUserDataMsg.poUserData);
+	/*读取当前消息是否是命令*/
+	bool isCmd = pCmdMsg->isCmd;
+	Irole *pRetRole = NULL;
+
+	for (Irole *prole : rolelist)
+	{
+		if (isCmd)
+		{
+			auto pOutCtrl = dynamic_cast<OutputCtrl *>(prole);
+			if (NULL != pOutCtrl)
+			{
+				pRetRole = pOutCtrl;
+				break;
+			}
+		}
+		else
+		{
+			auto pEcho = dynamic_cast<EchoRole *>(prole);
+			if (NULL != pEcho)
+			{
+				pRetRole = pEcho;
+				break;
+			}
+		}
+	}
 	
-	return rolelist.front();
+	return pRetRole;
 }
 
 Ichannel * CmdCheck::GetMsgSender(BytesMsg & _oBytes)

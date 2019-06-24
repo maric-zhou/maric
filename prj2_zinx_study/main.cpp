@@ -195,6 +195,7 @@ int main()
 	ZinxKernel::Zinx_Add_Channel(*(new StdInChannel()));
 	ZinxKernel::Zinx_Add_Channel(*(new StdOutChannel()));
 	ZinxKernel::Zinx_Add_Role(*(new EchoRole()));
+	ZinxKernel::Zinx_Add_Role(*(new OutputCtrl()));
 
 	/*5-ÔËÐÐ¿ò¼Ü*/
 	ZinxKernel::Zinx_Run();
