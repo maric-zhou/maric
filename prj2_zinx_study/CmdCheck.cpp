@@ -35,6 +35,16 @@ UserData * CmdCheck::raw2request(std::string _szInput)
 		pret->isCmd = true;
 		pret->isOpen = false;
 	}
+	if ("date" == _szInput)
+	{
+		pret->needDatePre = true;
+		pret->isCmd = true;
+	}
+	if ("cleardate" == _szInput)
+	{
+		pret->needDatePre = false;
+		pret->isCmd = true;
+	}
 	return pret;
 }
 
@@ -67,10 +77,10 @@ Irole * CmdCheck::GetMsgProcessor(UserDataMsg & _oUserDataMsg)
 		}
 		else
 		{
-			auto pEcho = dynamic_cast<EchoRole *>(prole);
-			if (NULL != pEcho)
+			auto pDate = dynamic_cast<DatePreRole *>(prole);
+			if (NULL != pDate)
 			{
-				pRetRole = pEcho;
+				pRetRole = pDate;
 				break;
 			}
 		}

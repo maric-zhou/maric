@@ -12,6 +12,8 @@ public:
 	bool isOpen = true;
 	/*该消息是命令*/
 	bool isCmd = false;
+	/*要加前缀*/
+	bool needDatePre = false;
 	CmdMsg();
 	virtual ~CmdMsg();
 };
