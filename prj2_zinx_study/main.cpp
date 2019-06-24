@@ -2,6 +2,7 @@
 #include <iostream>
 #include "SdInOutChannel.h"
 #include "EchoRole.h"
+#include <ZinxTCP.h>
 
 using namespace std;
 /*读标准输入，回显到标准输出*/
@@ -194,6 +195,7 @@ int main()
 	/*4-将通道对象添加到框架*/
 	ZinxKernel::Zinx_Add_Channel(*(new StdInChannel()));
 	ZinxKernel::Zinx_Add_Channel(*(new StdOutChannel()));
+	ZinxKernel::Zinx_Add_Channel(*(new ZinxTCPListen(51111, new myFact())));
 	ZinxKernel::Zinx_Add_Role(*(new EchoRole()));
 	ZinxKernel::Zinx_Add_Role(*(new DatePreRole()));
 	ZinxKernel::Zinx_Add_Role(*(new OutputCtrl()));

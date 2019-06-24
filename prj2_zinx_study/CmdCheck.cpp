@@ -91,6 +91,5 @@ Irole * CmdCheck::GetMsgProcessor(UserDataMsg & _oUserDataMsg)
 
 Ichannel * CmdCheck::GetMsgSender(BytesMsg & _oBytes)
 {
-	/*指定数据要通过标准输出输出*/
-	return ZinxKernel::Zinx_GetChannel_ByInfo("stdout");;
+	return ZinxKernel::Zinx_GetChannel_ByInfo("stdout");
 }

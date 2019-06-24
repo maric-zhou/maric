@@ -83,3 +83,14 @@ AZinxHandler * StdOutChannel::GetInputNextStage(BytesMsg & _oInput)
 {
 	return nullptr;
 }
+
+AZinxHandler * myTcpData::GetInputNextStage(BytesMsg & _oInput)
+{
+	/*返回协议对象*/
+	return CmdCheck::GetInstance();
+}
+
+ZinxTcpData * myFact::CreateTcpDataChannel(int _fd)
+{
+	return new myTcpData(_fd);
+}
