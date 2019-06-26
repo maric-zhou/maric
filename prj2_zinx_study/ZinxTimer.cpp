@@ -21,7 +21,7 @@ bool ZinxTimerChannel::Init()
 	{
 		/*设置定时周期*/
 		struct itimerspec period = {
-			{3,0}, {3,0}
+			{1,0}, {1,0}
 		};
 		if (0 == timerfd_settime(iFd, 0, &period, NULL))
 		{
@@ -86,5 +86,37 @@ class output_hello :public AZinxHandler {
 /*返回处理超时事件的对象*/
 AZinxHandler * ZinxTimerChannel::GetInputNextStage(BytesMsg & _oInput)
 {
-	return pout_hello;
+	return &TimerOutMng::GetInstance();
+}
+TimerOutMng TimerOutMng::single;
+IZinxMsg * TimerOutMng::InternelHandle(IZinxMsg & _oInput)
+{
+	/*遍历任务列表，每个任务的计数减一*/
+	for (auto task : m_task_list)
+	{
+		task->iCount--;
+		/*若计数为0则调用超时处理函数,回复计数*/
+		if (task->iCount <= 0)
+		{
+			task->Proc();
+			task->iCount = task->GetTimeSec();
+		}
+	}
+	return nullptr;
+}
+
+AZinxHandler * TimerOutMng::GetNextHandler(IZinxMsg & _oNextMsg)
+{
+	return nullptr;
+}
+
+void TimerOutMng::AddTask(TimerOutProc * _ptask)
+{
+	m_task_list.push_back(_ptask);
+	_ptask->iCount = _ptask->GetTimeSec();
+}
+
+void TimerOutMng::DelTask(TimerOutProc * _ptask)
+{
+	m_task_list.remove(_ptask);
 }

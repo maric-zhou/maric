@@ -188,10 +188,41 @@ class TestStdin :public Ichannel {
 	}
 };
 
+class timerhello :public TimerOutProc {
+	// 通过 TimerOutProc 继承
+	virtual void Proc() override
+	{
+		auto pchannel = ZinxKernel::Zinx_GetChannel_ByInfo("stdout");
+		std::string output = "hello world";
+		ZinxKernel::Zinx_SendOut(output, *pchannel);
+	}
+	virtual int GetTimeSec() override
+	{
+		return 3;
+	}
+};
+
+class timerbye :public TimerOutProc {
+	// 通过 TimerOutProc 继承
+	virtual void Proc() override
+	{
+		auto pchannel = ZinxKernel::Zinx_GetChannel_ByInfo("stdout");
+		std::string output = "bye";
+		ZinxKernel::Zinx_SendOut(output, *pchannel);
+	}
+	virtual int GetTimeSec() override
+	{
+		return 5;
+	}
+};
+
 int main()
 {
 	/*1-初始化框架*/
 	ZinxKernel::ZinxKernelInit();
+
+	TimerOutMng::GetInstance().AddTask(new timerhello());
+	TimerOutMng::GetInstance().AddTask(new timerbye());
 
 	/*4-将通道对象添加到框架*/
 	ZinxKernel::Zinx_Add_Channel(*(new StdInChannel()));
