@@ -3,6 +3,7 @@
 #include "SdInOutChannel.h"
 #include "EchoRole.h"
 #include <ZinxTCP.h>
+#include "ZinxTimer.h"
 
 using namespace std;
 /*读标准输入，回显到标准输出*/
@@ -199,6 +200,7 @@ int main()
 	ZinxKernel::Zinx_Add_Role(*(new EchoRole()));
 	ZinxKernel::Zinx_Add_Role(*(new DatePreRole()));
 	ZinxKernel::Zinx_Add_Role(*(new OutputCtrl()));
+	ZinxKernel::Zinx_Add_Channel(*(new ZinxTimerChannel()));
 
 	/*5-运行框架*/
 	ZinxKernel::Zinx_Run();
