@@ -1,5 +1,7 @@
 #pragma once
 #include <zinx.h>
+#include <vector>
+#include <list>
 
 class ZinxTimerChannel :
 	public Ichannel
@@ -24,12 +26,15 @@ class TimerOutProc {
 public:
 	virtual void Proc() = 0;
 	virtual int GetTimeSec() = 0;
+	/*所剩圈数*/
 	int iCount = -1;
 };
 
 class TimerOutMng :public AZinxHandler {
-	std::list<TimerOutProc *> m_task_list;
+	std::vector<std::list<TimerOutProc *> > m_timer_wheel;
+	int cur_index = 0;
 	static TimerOutMng single;
+	TimerOutMng();
 public:
 	/*处理超时事件,遍历所有超时任务*/
 	virtual IZinxMsg * InternelHandle(IZinxMsg & _oInput) override;

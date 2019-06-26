@@ -1,6 +1,7 @@
 #include "ZinxTimer.h"
 #include <sys/timerfd.h>
 
+using namespace std;
 
 ZinxTimerChannel::ZinxTimerChannel()
 {
@@ -89,19 +90,52 @@ AZinxHandler * ZinxTimerChannel::GetInputNextStage(BytesMsg & _oInput)
 	return &TimerOutMng::GetInstance();
 }
 TimerOutMng TimerOutMng::single;
+TimerOutMng::TimerOutMng()
+{
+	/*创建10个齿*/
+	for (int i = 0; i < 10; i++)
+	{
+		list<TimerOutProc *> tmp;
+		m_timer_wheel.push_back(tmp);
+	}
+}
 IZinxMsg * TimerOutMng::InternelHandle(IZinxMsg & _oInput)
 {
-	/*遍历任务列表，每个任务的计数减一*/
-	for (auto task : m_task_list)
+	unsigned long iTimeoutCount = 0;
+	GET_REF2DATA(BytesMsg, obytes, _oInput);
+	obytes.szData.copy((char *)&iTimeoutCount, sizeof(iTimeoutCount), 0);
+
+	while (iTimeoutCount-- > 0)
 	{
-		task->iCount--;
-		/*若计数为0则调用超时处理函数,回复计数*/
-		if (task->iCount <= 0)
+		/*移动刻度*/
+		cur_index++;
+		cur_index %= 10;
+		list<TimerOutProc *> m_cache;
+		/*遍历当前刻度所有节点，指向处理函数或圈数-1，*/
+		for (auto itr = m_timer_wheel[cur_index].begin(); itr != m_timer_wheel[cur_index].end(); )
+		{
+			if ((*itr)->iCount <= 0)
+			{
+				/*缓存待处理的超时节点*/
+				m_cache.push_back(*itr);
+				auto ptmp = *itr;
+				itr = m_timer_wheel[cur_index].erase(itr);
+				AddTask(ptmp);
+			}
+			else
+			{
+				(*itr)->iCount--;
+				++itr;
+			}
+		}
+
+		/*统一待处理超时任务*/
+		for (auto task : m_cache)
 		{
 			task->Proc();
-			task->iCount = task->GetTimeSec();
 		}
 	}
+	
 	return nullptr;
 }
 
@@ -112,11 +146,26 @@ AZinxHandler * TimerOutMng::GetNextHandler(IZinxMsg & _oNextMsg)
 
 void TimerOutMng::AddTask(TimerOutProc * _ptask)
 {
-	m_task_list.push_back(_ptask);
-	_ptask->iCount = _ptask->GetTimeSec();
+	/*计算当前任务需要放到哪个齿上*/
+	int index = (_ptask->GetTimeSec() + cur_index) % 10;
+	/*把任务存到该齿上*/
+	m_timer_wheel[index].push_back(_ptask);
+	/*计算所需圈数*/
+	_ptask->iCount = _ptask->GetTimeSec() / 10;
 }
 
 void TimerOutMng::DelTask(TimerOutProc * _ptask)
 {
-	m_task_list.remove(_ptask);
+	/*遍历时间轮所有齿，删掉任务*/
+	for (list<TimerOutProc *> &chi : m_timer_wheel)
+	{
+		for (auto task : chi)
+		{
+			if (task == _ptask)
+			{
+				chi.remove(_ptask);
+				return;
+			}
+		}
+	}
 }

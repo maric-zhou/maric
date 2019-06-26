@@ -195,6 +195,7 @@ class timerhello :public TimerOutProc {
 		auto pchannel = ZinxKernel::Zinx_GetChannel_ByInfo("stdout");
 		std::string output = "hello world";
 		ZinxKernel::Zinx_SendOut(output, *pchannel);
+		TimerOutMng::GetInstance().DelTask(this);
 	}
 	virtual int GetTimeSec() override
 	{
@@ -222,7 +223,7 @@ int main()
 	ZinxKernel::ZinxKernelInit();
 
 	TimerOutMng::GetInstance().AddTask(new timerhello());
-	TimerOutMng::GetInstance().AddTask(new timerbye());
+	//TimerOutMng::GetInstance().AddTask(new timerbye());
 
 	/*4-将通道对象添加到框架*/
 	ZinxKernel::Zinx_Add_Channel(*(new StdInChannel()));
